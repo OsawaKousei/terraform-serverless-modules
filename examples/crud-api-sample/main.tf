@@ -12,11 +12,11 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
-# api-gateway-lambda-dynamodbモジュールを使用してサーバーレスAPIをデプロイ
-module "serverless_api" {
-  source = "../../modules/api-gateway-lambda-dynamodb"
+# crud-apiモジュールを使用してCRUD APIをデプロイ
+module "crud_api" {
+  source = "../../modules/crud-api"
 
-  name_prefix = "my-serverless-api"
+  name_prefix = "my-crud-api"
 
   # ECRのイメージURIを指定
   # 例: "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/my-app:latest"
@@ -30,7 +30,7 @@ module "serverless_api" {
 
   tags = {
     Environment = "dev"
-    Project     = "api-gateway-lambda-dynamodb-sample"
+    Project     = "crud-api-sample"
     ManagedBy   = "Terraform"
   }
 }

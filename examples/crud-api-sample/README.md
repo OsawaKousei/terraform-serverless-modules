@@ -1,6 +1,6 @@
-# API Gateway + Lambda + DynamoDB サンプル
+# CRUD API サンプル
 
-このサンプルは、`api-gateway-lambda-dynamodb`モジュールを使用してサーバーレスAPIをAWSにデプロイする方法を示しています。
+このサンプルは、`crud-api`モジュールを使用してデータベース連携のCRUD APIをAWSにデプロイする方法を示しています。
 
 ## 構成
 
@@ -86,10 +86,10 @@ aws dynamodb scan --table-name $(terraform output -raw dynamodb_table_name)
 `main.tf`で`dynamodb_table_name`を設定します：
 
 ```hcl
-module "serverless_api" {
-  source = "../../modules/api-gateway-lambda-dynamodb"
+module "crud_api" {
+  source = "../../modules/crud-api"
 
-  name_prefix         = "my-serverless-api"
+  name_prefix         = "my-crud-api"
   image_uri           = var.image_uri
   dynamodb_table_name = "my-custom-table-name"
 
@@ -104,10 +104,10 @@ module "serverless_api" {
 デフォルトは`PAY_PER_REQUEST`（オンデマンド）ですが、プロビジョニングモードに変更できます：
 
 ```hcl
-module "serverless_api" {
-  source = "../../modules/api-gateway-lambda-dynamodb"
+module "crud_api" {
+  source = "../../modules/crud-api"
 
-  name_prefix           = "my-serverless-api"
+  name_prefix           = "my-crud-api"
   image_uri             = var.image_uri
   dynamodb_billing_mode = "PROVISIONED"
 

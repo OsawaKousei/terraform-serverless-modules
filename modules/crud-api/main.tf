@@ -3,11 +3,11 @@ locals {
 }
 
 module "api" {
-  source = "../api-gateway-lambda"
+  source = "../rest-api"
 
   name_prefix = var.name_prefix
   image_uri   = var.image_uri
-  
+
   environment_variables = {
     DYNAMODB_TABLE_NAME = local.table_name
   }
