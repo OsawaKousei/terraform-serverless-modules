@@ -20,7 +20,7 @@ module "crud_api" {
 
   # ECRのイメージURIを指定
   # 例: "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/my-app:latest"
-  image_uri = var.image_uri
+  image_uri = "your-ecr-image-uri"
 
   # DynamoDBテーブル名（オプション。指定しない場合は{name_prefix}-tableが使用されます）
   # dynamodb_table_name = "my-custom-table-name"
