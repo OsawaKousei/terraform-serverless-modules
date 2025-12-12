@@ -9,22 +9,22 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-northeast-1"
+  region = var.aws_region
 }
 
 # csr-web-appモジュールを使用してReactアプリなどのCSRアプリをデプロイ
 module "csr_web_app" {
   source = "../../modules/csr-web-app"
 
-  bucket_name = "my-csr-web-app-sample-${data.aws_caller_identity.current.account_id}"
+  bucket_name = "${var.bucket_name_prefix}-${data.aws_caller_identity.current.account_id}"
 
-  # カスタムドメインを使用する場合は以下のコメントを解除
-  domain_name         = "app.example.com"
-  acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+  # カスタムドメインを使用する場合
+  domain_name         = var.use_custom_domain ? var.domain_name : null
+  acm_certificate_arn = var.use_custom_domain ? var.acm_certificate_arn : null
 
   tags = {
-    Environment = "dev"
-    Project     = "csr-web-app-sample"
+    Environment = var.environment
+    Project     = var.project_name
     ManagedBy   = "Terraform"
   }
 }
