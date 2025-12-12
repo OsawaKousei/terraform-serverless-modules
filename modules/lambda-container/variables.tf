@@ -14,6 +14,24 @@ variable "environment_variables" {
   default     = {}
 }
 
+variable "timeout" {
+  description = "Timeout for the Lambda function in seconds"
+  type        = number
+  default     = 3
+}
+
+variable "memory_size" {
+  description = "Memory size for the Lambda function in MB"
+  type        = number
+  default     = 1024
+}
+
+variable "log_retention_in_days" {
+  description = "CloudWatch Logs retention period in days"
+  type        = number
+  default     = 7
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)

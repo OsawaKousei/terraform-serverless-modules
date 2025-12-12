@@ -4,6 +4,9 @@ module "lambda" {
   function_name         = "${var.name_prefix}-function"
   image_uri             = var.image_uri
   environment_variables = var.environment_variables
+  timeout               = var.timeout
+  memory_size           = var.memory_size
+  log_retention_in_days = var.log_retention_in_days
   tags                  = var.tags
 }
 
