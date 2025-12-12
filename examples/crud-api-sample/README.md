@@ -27,10 +27,22 @@
 
 ### 1. terraform.tfvarsファイルの作成
 
+サンプルファイルをコピーして編集します：
+
 ```bash
-cat > terraform.tfvars <<EOF
+cp terraform.tfvars.example terraform.tfvars
+```
+
+`terraform.tfvars`を編集して、必要な値を設定してください：
+
+```hcl
+# 必須: ECRイメージURIを設定
 image_uri = "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/my-app:latest"
-EOF
+
+# オプション: その他の設定を必要に応じて変更
+# name_prefix = "my-crud-api"
+# table_name  = "MockTable"
+# environment = "dev"
 ```
 
 ### 2. 初期化
@@ -81,41 +93,44 @@ aws dynamodb scan --table-name $(terraform output -raw dynamodb_table_name)
 
 ## カスタマイズ
 
-### DynamoDBテーブル名を指定する
+すべての設定は`terraform.tfvars`ファイルまたは`variables.tf`で管理されています。
 
-`main.tf`で`dynamodb_table_name`を設定します：
+### よく使用されるカスタマイズ例
 
+#### リージョンの変更
 ```hcl
-module "crud_api" {
-  source = "../../modules/crud-api"
-
-  name_prefix         = "my-crud-api"
-  image_uri           = var.image_uri
-  dynamodb_table_name = "my-custom-table-name"
-
-  tags = {
-    Environment = "dev"
-  }
-}
+aws_region = "us-east-1"
 ```
 
-### DynamoDBの課金モードを変更する
-
-デフォルトは`PAY_PER_REQUEST`（オンデマンド）ですが、プロビジョニングモードに変更できます：
-
+#### Lambda関数の設定変更
 ```hcl
-module "crud_api" {
-  source = "../../modules/crud-api"
-
-  name_prefix           = "my-crud-api"
-  image_uri             = var.image_uri
-  dynamodb_billing_mode = "PROVISIONED"
-
-  tags = {
-    Environment = "dev"
-  }
-}
+lambda_timeout     = 60
+lambda_memory_size = 1024
 ```
+
+#### DynamoDBの課金モードを変更
+```hcl
+billing_mode = "PROVISIONED"  # オンデマンドからプロビジョニングモードへ
+```
+
+#### セキュリティ設定（本番環境向け）
+```hcl
+deletion_protection_enabled = true
+pitr_enabled                = true
+environment                 = "prod"
+```
+
+### 利用可能な変数
+
+すべての変数と説明は[variables.tf](variables.tf)を参照してください。
+
+主な変数:
+- `image_uri` (必須): ECRイメージURI
+- `name_prefix`: リソース名のプレフィックス
+- `table_name`: DynamoDBテーブル名
+- `hash_key`, `range_key`: DynamoDBのキー設定
+- `lambda_timeout`, `lambda_memory_size`: Lambda関数の設定
+- `environment`: 環境名（タグ付けに使用）
 
 ## Lambda関数の実装例
 
@@ -192,8 +207,8 @@ terraform destroy
 ## 注意事項
 
 - Lambda関数には自動的にDynamoDBへの読み書き権限が付与されます
-- DynamoDBテーブルのパーティションキーは`id`（文字列型）として作成されます
-- 必要に応じてソートキーやGSI（グローバルセカンダリインデックス）を追加する場合は、モジュールをカスタマイズしてください
+- DynamoDBテーブルのキー構成は変数で設定可能です（デフォルト: `method`と`path`）
+- 必要に応じてGSI（グローバルセカンダリインデックス）を追加する場合は、`main.tf`の`global_secondary_indexes`を編集してください
 - API Gatewayは`$default`ルートでLambdaと統合されているため、すべてのHTTPメソッドとパスがLambdaに転送されます
 
 ## トラブルシューティング
@@ -201,7 +216,7 @@ terraform destroy
 ### Lambda関数のログを確認
 
 ```bash
-aws logs tail /aws/lambda/my-serverless-api-function --follow
+aws logs tail /aws/lambda/my-crud-api-function --follow
 ```
 
 ### DynamoDBテーブルの確認

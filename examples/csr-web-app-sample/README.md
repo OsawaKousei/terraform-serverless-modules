@@ -13,25 +13,46 @@
 
 ## 使い方
 
-### 1. 初期化
+### 1. terraform.tfvarsファイルの作成
+
+サンプルファイルをコピーして編集します：
+
+```bash
+cp terraform.tfvars.example terraform.tfvars
+```
+
+必要に応じて`terraform.tfvars`を編集してください：
+
+```hcl
+# 基本設定
+bucket_name_prefix = "my-csr-web-app"
+environment        = "dev"
+
+# カスタムドメインを使用する場合
+# use_custom_domain   = true
+# domain_name         = "app.example.com"
+# acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+```
+
+### 2. 初期化
 
 ```bash
 terraform init
 ```
 
-### 2. プランの確認
+### 3. プランの確認
 
 ```bash
 terraform plan
 ```
 
-### 3. デプロイ
+### 4. デプロイ
 
 ```bash
 terraform apply
 ```
 
-### 4. ビルドしたファイルをS3にアップロード
+### 5. ビルドしたファイルをS3にアップロード
 
 ```bash
 # Reactアプリの例
@@ -44,7 +65,7 @@ aws s3 sync ./out s3://$(terraform output -raw s3_bucket_name)/ --delete
 aws s3 sync ./dist s3://$(terraform output -raw s3_bucket_name)/ --delete
 ```
 
-### 5. CloudFrontのキャッシュをクリア
+### 6. CloudFrontのキャッシュをクリア
 
 ```bash
 aws cloudfront create-invalidation \
@@ -52,34 +73,55 @@ aws cloudfront create-invalidation \
   --paths "/*"
 ```
 
-### 6. アクセス
+### 7. アクセス
 
 ```bash
 echo "https://$(terraform output -raw cloudfront_domain_name)"
 ```
 
-## カスタムドメインの使用
+## カスタマイズ
 
-カスタムドメインを使用する場合は、`main.tf`で以下の設定を有効にしてください：
+すべての設定は`terraform.tfvars`ファイルで管理されています。
 
-1. `domain_name`にカスタムドメイン名を指定
-2. `acm_certificate_arn`にus-east-1リージョンで発行したACM証明書のARNを指定
-3. Route 53やドメインレジストラでCNAMEレコードを設定
+### カスタムドメインの使用
+
+カスタムドメインを使用する場合は、`terraform.tfvars`で以下を設定してください：
 
 ```hcl
-module "csr_web_app" {
-  source = "../../csr-web-app"
-
-  bucket_name          = "my-csr-web-app-${data.aws_caller_identity.current.account_id}"
-  domain_name          = "app.example.com"
-  acm_certificate_arn  = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
-
-  tags = {
-    Environment = "dev"
-    Project     = "csr-web-app-sample"
-  }
-}
+use_custom_domain   = true
+domain_name         = "app.example.com"
+acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
 ```
+
+**注意点：**
+1. ACM証明書はCloudFront用に**us-east-1リージョン**で発行する必要があります
+2. Route 53やドメインレジストラでCNAMEレコードを設定してください：
+   ```
+   app.example.com -> d1234abcd5678.cloudfront.net
+   ```
+
+### リージョンの変更
+
+```hcl
+aws_region = "us-east-1"
+```
+
+### バケット名のカスタマイズ
+
+```hcl
+bucket_name_prefix = "my-custom-app"
+```
+
+### 利用可能な変数
+
+すべての変数と説明は[variables.tf](variables.tf)を参照してください。
+
+主な変数:
+- `bucket_name_prefix`: S3バケット名のプレフィックス（アカウントIDが自動付加されます）
+- `use_custom_domain`: カスタムドメインを使用するかどうか
+- `domain_name`: カスタムドメイン名
+- `acm_certificate_arn`: ACM証明書ARN（us-east-1リージョン）
+- `environment`: 環境名（タグ付けに使用）
 
 ## クリーンアップ
 
