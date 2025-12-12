@@ -1,5 +1,5 @@
 locals {
-  table_name = var.dynamodb_table_name != "" ? var.dynamodb_table_name : "${var.name_prefix}-table"
+  table_name = var.table_name != "" ? var.table_name : "${var.name_prefix}-table"
 }
 
 module "api" {
@@ -8,22 +8,30 @@ module "api" {
   name_prefix = var.name_prefix
   image_uri   = var.image_uri
 
-  environment_variables = {
-    DYNAMODB_TABLE_NAME = local.table_name
-  }
+  environment_variables = merge(
+    {
+      DYNAMODB_TABLE_NAME = local.table_name
+    },
+    var.environment_variables
+  )
 
   tags = var.tags
 }
 
-resource "aws_dynamodb_table" "this" {
-  name         = local.table_name
-  billing_mode = var.dynamodb_billing_mode
-  hash_key     = "id"
+module "dynamodb" {
+  source = "../dynamodb-table"
 
-  attribute {
-    name = "id"
-    type = "S"
-  }
+  table_name                  = local.table_name
+  billing_mode                = var.billing_mode
+  hash_key                    = var.hash_key
+  range_key                   = var.range_key
+  attributes                  = var.attributes
+  global_secondary_indexes    = var.global_secondary_indexes
+  ttl_attribute               = var.ttl_attribute
+  deletion_protection_enabled = var.deletion_protection_enabled
+  pitr_enabled                = var.pitr_enabled
+  read_capacity               = var.read_capacity
+  write_capacity              = var.write_capacity
 
   tags = var.tags
 }
@@ -47,7 +55,7 @@ resource "aws_iam_policy" "dynamodb_access" {
           "dynamodb:DeleteItem"
         ]
         Effect   = "Allow"
-        Resource = aws_dynamodb_table.this.arn
+        Resource = module.dynamodb.table_arn
       }
     ]
   })

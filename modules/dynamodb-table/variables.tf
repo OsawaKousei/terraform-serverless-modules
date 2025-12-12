@@ -1,17 +1,6 @@
-variable "name_prefix" {
-  description = "Prefix for resource names"
-  type        = string
-}
-
-variable "image_uri" {
-  description = "URI of the container image in ECR"
-  type        = string
-}
-
 variable "table_name" {
   description = "Name of the DynamoDB table"
   type        = string
-  default     = ""
 }
 
 variable "billing_mode" {
@@ -38,10 +27,6 @@ variable "attributes" {
     name = string
     type = string
   }))
-  default = [
-    { name = "PK", type = "S" },
-    { name = "SK", type = "S" }
-  ]
 }
 
 variable "global_secondary_indexes" {
@@ -67,13 +52,13 @@ variable "ttl_attribute" {
 variable "deletion_protection_enabled" {
   description = "Enable deletion protection"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "pitr_enabled" {
   description = "Enable Point-In-Time Recovery (Costs apply)"
   type        = bool
-  default     = false
+  default     = false # デフォルトはOFFにしておき、本番だけONにするなど
 }
 
 variable "read_capacity" {
@@ -88,14 +73,8 @@ variable "write_capacity" {
   default     = 5
 }
 
-variable "environment_variables" {
-  description = "Additional environment variables to pass to Lambda function"
-  type        = map(string)
-  default     = {}
-}
-
 variable "tags" {
-  description = "Tags to apply to resources"
+  description = "Tags to apply"
   type        = map(string)
   default     = {}
 }
